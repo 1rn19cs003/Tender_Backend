@@ -12,15 +12,6 @@ const multer = require("multer");
 // creating of express app
 const app = express();
 
-
-var cors = require("cors");
-const corsOptions = {
-  origin: "http://localhost:3000",
-  credentials: true, //access-control-allow-credentials:true
-  optionSuccessStatus: 200,
-};
-app.use(cors(corsOptions));
-
 // creating 24 hours from milliseconds
 const oneDay = 1000 * 60 * 60 * 24;
 
