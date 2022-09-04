@@ -1,5 +1,4 @@
 const { MongoClient } = require('mongodb');
-const mongoose =require('mongoose');
 
 const url =  process.env.MONGODB_URL || 'mongodb+srv://tender:tender@cluster0.mesqitc.mongodb.net/Vendors?retryWrites=true&w=majority'
 // const url = process.env.MONGODB_URL || "mongodb://localhost:27017/placement"
