@@ -1,7 +1,7 @@
 const { MongoClient } = require('mongodb');
-
-const url = 'mongodb+srv://tender:tender@cluster0.mesqitc.mongodb.net/Vendors?retryWrites=true&w=majority'
-// const url =  process.env.MONGODB_URL || 'mongodb+srv://tender:tender@cluster0.mesqitc.mongodb.net/Vendors?retryWrites=true&w=majority'
+const mongoose =require('mongoose');
+// const url = 'mongodb+srv://tender:tender@cluster0.mesqitc.mongodb.net/Vendors?retryWrites=true&w=majority'
+const url =  process.env.MONGODB_URL || 'mongodb+srv://tender:tender@cluster0.mesqitc.mongodb.net/Vendors?retryWrites=true&w=majority'
 // const url = process.env.MONGODB_URL || "mongodb://localhost:27017/placement"
 // const url = 'mongodb://localhost:27017/<name_the_cluster>'
 
@@ -22,9 +22,15 @@ let dbo
 //     console.log(`connection successful`);
 // }).catch((err)=>console.log(`No Connection`));
 
+// mongoose.connect(url,{
+//     useNewUrlParser:true,
+//     useCreateIndex:true,
+//     useUnifiedTopology:true,
+//     useFindAndModify:false
+// }).then(()=>{
 module.exports = {
     connect: (callback) => {
-        MongoClient.connect(url, async (err, db) => {
+        MongoClient.connect(process.env.MONGODB_URL  || url, async (err, db) => {
             if (err) throw err
             console.log("DB connected !")
             dbo = await db.db("Vendors")
@@ -51,3 +57,4 @@ module.exports = {
     },
     getdb: () => { return dbo },
 }
+// }).catch((err)=>console.log(`No Connection`));
