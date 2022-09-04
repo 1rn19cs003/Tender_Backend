@@ -14,6 +14,7 @@ const app = express();
 
 
 var cors = require("cors");
+
 const corsOptions = {
   origin: "http://localhost:3000",
   credentials: true, //access-control-allow-credentials:true
@@ -44,7 +45,7 @@ app.use(function (req, res, next) {
         res.header("Access-Control-Allow-Origin", req.headers.origin) // restrict it to the required domain
     }
     // res.header("Access-Control-Allow-Origin", origins) // update to match the domain you will make the request from
-    res.header("Access-Control-Allow-Methods", "GET,POST")
+    res.header("Access-Control-Allow-Methods", "GET,POST,DELETE")
     res.header("Access-Control-Allow-Headers", "Origin, X-Requested-With, Content-Type, Accept")
     res.header("Access-Control-Allow-Credentials", "true")
     next()
