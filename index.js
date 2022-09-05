@@ -16,7 +16,7 @@ const app = express();
 var cors = require("cors");
 
 const corsOptions = {
-  origin: "*",
+  origin: "https://tendermanagement.netlify.app",
   credentials: true, //access-control-allow-credentials:true
   optionSuccessStatus: 200,
 };
@@ -38,8 +38,8 @@ app.use(
 );
 // enabling CROS
 
-let origins = ["*"]
-if (process.env.NODE_ENV === "development") origins.push("https://tendermanagement.netlify.app/")
+let origins = ["https://tendermanagement.netlify.app"]
+if (process.env.NODE_ENV === "development") origins.push("https://tendermanagement.netlify.app")
 app.use(function (req, res, next) {
     if (origins.includes(req.headers.origin)) {
         res.header("Access-Control-Allow-Origin", req.headers.origin) // restrict it to the required domain
