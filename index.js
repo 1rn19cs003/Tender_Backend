@@ -5,6 +5,7 @@ const cookieParser = require("cookie-parser");
 const sessions = require("express-session");
 const mongo = require("./src/config/database.config.js");
 const multer = require("multer");
+const path = require('path')
 
 // Abhishek Jaiswal:- Let's check it out!!!!!!!
 // mailto:-abhigrmr@gmail.com
@@ -12,19 +13,6 @@ const multer = require("multer");
 // creating of express app
 const app = express();
 
-<<<<<<< HEAD
-=======
-
-var cors = require("cors");
-
-const corsOptions = {
-  origin: "https://tendermanagement.netlify.app",
-  credentials: true, //access-control-allow-credentials:true
-  optionSuccessStatus: 200,
-};
-app.use(cors(corsOptions));
-
->>>>>>> 1fa54d2977b8817891415fa76d63b32d53594109
 // creating 24 hours from milliseconds
 const oneDay = 1000 * 60 * 60 * 24;
 
@@ -73,6 +61,14 @@ mongo.connect((err, db) => {
     // Require routes
     require("./src/router/signin")(app, db)
     require("./src/router/routes")(app, db)
+})
+app.get("/uploads/:filename", (req, res) => {
+    console.log(res.params)
+    res.sendFile(path.join(__dirname + "/uploads/" + req.params.filename))
+})
+app.get("/uploads_tender/:filename", (req, res) => {
+    console.log(res.params)
+    res.sendFile(path.join(__dirname + "/uploads_tender/" + req.params.filename))
 })
 
 

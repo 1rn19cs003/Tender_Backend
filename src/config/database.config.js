@@ -1,6 +1,7 @@
-const { MongoClient } = require('mongodb');
-const mongoose =require('mongoose');
-const url =  process.env.MONGODB_URL ;
+require("dotenv").config()
+const { MongoClient } = require("mongodb")
+const mongoose = require("mongoose")
+const url = process.env.MONGODB_URL
 // const url = process.env.MONGODB_URL || "mongodb://localhost:27017/placement"
 // const url = 'mongodb://localhost:27017/<name_the_cluster>'
 
@@ -28,22 +29,21 @@ let dbo
 //     useFindAndModify:false
 // }).then(()=>{
 module.exports = {
-    connect: (callback) => {
-        MongoClient.connect(process.env.MONGODB_URL  || url, async (err, db) => {
+    connect: callback => {
+        MongoClient.connect(process.env.MONGODB_URL || url, async (err, db) => {
             if (err) throw err
             console.log("DB connected !")
             dbo = await db.db("Vendors")
             try {
                 collections.forEach((v, index, arr) => {
                     dbo.createCollection("vendors", (err, res) => {
-                        if (err && err.codeName === 'NamespaceExists') {
+                        if (err && err.codeName === "NamespaceExists") {
                             arr.length = index + 1
                             flag = true
                             console.log(`Collection ${v} exists !`)
-                        }
-                        else if (!err) console.log("Collection created !")
+                        } else if (!err) console.log("Collection created !")
                     })
-                });
+                })
             } catch (error) {
                 if (!flag) {
                     console.log("\n Error \n")
@@ -54,6 +54,8 @@ module.exports = {
             }
         })
     },
-    getdb: () => { return dbo },
+    getdb: () => {
+        return dbo
+    },
 }
 // }).catch((err)=>console.log(`No Connection`));

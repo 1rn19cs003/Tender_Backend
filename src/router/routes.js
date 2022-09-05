@@ -63,81 +63,57 @@ module.exports = function (app, db) {
         let size = 0;
         if (page.length && smooth)
             size = 1;
-        // Check if already logged in ?
-        if (req.session && req.session.userid) {
-            console.log(req.session);
-            res.json({
-                status: "warn",
-                message: "Session already exists !",
-                isLogged: true,
-                lastUpdated: req.session.lastUpdated,
-                isLatest: false,
-                // keys: req.session.keys,
-                profile: req.session.profile,
-            });
-        }
-        // check if any value is not null
-        else if (
-            size != 0 &&
-            k.tenderName &&
-            k.startDate &&
-            k.endDate
-
-        ) {
+        // check if any value is not null and logged in
+        if ((size != 0 && k.tenderName && k.startDate && k.endDate) || (req.session && req.session.userid)) {
             // check if record already exists...
-            db.collection("files").findOne(
-                { tenderName: k.tenderName },
-                { projection: { _id: 1, tenderName: 1 } },
-                (error, result) => {
-                    if (result && result._id) {
-                        res.json({
-                            status: "error",
-                            message: "File already exists !",
-                            isLogged: false,
-                        });
-                    }
-                    // tenderName doesn't exists, create one
-                    else {
-                        let obj = {
-                            tenderName: k.tenderName,
-                            profile: {
-                                file: req.file,
-                                startDate: k.startDate,
-                                endDate: k.endDate,
-                            },
-
-                        };
-                        db.collection("files").insertOne(obj, (error, results) => {
-                            if (error) {
-                                res.json({
-                                    status: "error",
-                                    message: error,
-                                    isLogged: false,
-                                });
-                                throw error;
-                            }
-                            // Records inserted, auto log in
-                            else {
-                                // log it in
-                                res.json({
-                                    status: "success",
-                                    message: "File Uploaded !",
-                                    isLatest: true,
-                                    isLogged: true,
-                                    profile: obj.profile,
-                                });
-                            }
-                        });
-                    }
+            db.collection("files").findOne({ tenderName: k.tenderName }, { projection: { _id: 1, tenderName: 1 } }, (error, result) => {
+                if (result && result._id) {
+                    res.json({
+                        status: "error",
+                        message: "File already exists !",
+                        isLogged: false,
+                    })
                 }
-            );
+                // tenderName doesn't exists, create one
+                else {
+                    let obj = {
+                        tenderName: k.tenderName,
+                        profile: {
+                            file: req.file,
+                            startDate: k.startDate,
+                            endDate: k.endDate,
+                        },
+                    }
+                    db.collection("files").insertOne(obj, (error, results) => {
+                        if (error) {
+                            res.json({
+                                status: "error",
+                                message: error,
+                                isLogged: false,
+                            })
+                            throw error
+                        }
+                        // Records inserted, auto log in
+                        else {
+                            // log it in
+                            res.json({
+                                status: "success",
+                                message: "File Uploaded !",
+                                isLatest: true,
+                                isLogged: true,
+                                profile: obj.profile,
+                            })
+                        }
+                    })
+                }
+            })
         } else {
             // some fields are null
             res.json({
                 status: "error",
                 message: "Empty or invalid data",
                 isLogged: false,
-            });
+            })
         }
     });
     
