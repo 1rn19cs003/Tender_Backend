@@ -441,6 +441,36 @@ module.exports = function (app, db) {
     });
     // =======================================================================*******************************================================
     // =======================================================================*******************************================================
+    app.delete("/delete_tender_file", (req, res) => {
+        // console.log(req.body.email);
+        let k = req.body;
+        console.log(k.tenderName);
+        db.collection("tender_files").findOne(
+            { tenderName: k.tenderName },
+            { projection: { _id: 1, tenderName: 1 } },
+            (error, result) => {
+                if (result && result._id) {
+                    // res.json({
+                    //     result
+                    // });
+                    const resu = db.collection("tender_files").deleteMany({ tenderName: k.tenderName ,email:k.email});
+                    // res.send(resu);
+                    console.log(resu);
+                    res.send(resu);
+                }
+                else {
+                    // console.log(results);
+                    // res.json(results);
+                    res.json({
+                        status: "error",
+                        message: "Empty or invalid email",
+                        isLogged: false,
+                    });
+                }
+            });
+    });
+    // =======================================================================*******************************================================
+    // =======================================================================*******************************================================
     // combined data of files and members
     app.get("/all_data", (req, res) => {
         console.log("insides");
