@@ -66,11 +66,11 @@ app.get("/uploads/:filename", (req, res) => {
     console.log(res.params)
     res.sendFile(path.join(__dirname + "/uploads/" + req.params.filename))
 })
+
 app.get("/uploads_tender/:filename", (req, res) => {
     console.log(res.params)
     res.sendFile(path.join(__dirname + "/uploads_tender/" + req.params.filename))
 })
-
 
 // server listening
 app.listen(port, () => {

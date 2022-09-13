@@ -116,10 +116,10 @@ module.exports = function (app, db) {
             })
         }
     });
-    
+
     // =======================================================================*******************************================================
     // =======================================================================*******************************================================
-    const upload_tender = multer({
+    const upload_PAN = multer({
         storage: multer.diskStorage({
             destination: function (req, file, cb) {
                 // console.log(file+" ");
@@ -142,98 +142,115 @@ module.exports = function (app, db) {
                 cb(null, file.fieldname + "_" + Date.now() + ".pdf")
             }
         })
-    }).single("tender_file");
-    app.post("/upload_tender_file", upload_tender, (req, res) => {
+    }).any('PAN_file', 'EMD_file', 'Aadhar_file')
+    app.post("/upload_tender_file", upload_PAN, (req, res) => {
         let k = req.body;
-    
-        let temp = req.file;
-        // console.log(temp);
-        // console.log(k);
+        let f = req.files;
+        let temp = req.files.length;
+        // let files={}
+        let edm=f[0];
+        let pan=f[1];
+        let aadhar=f[2]
+        // console.log(f[0])
+        // f.forEach(elem => {
+        //     console.log("name "+elem.fieldname);
+        // });
+        console.log(temp);
+        console.log(k);
         // console.log(temp.fieldname);
-        let page;
-        if (temp.fieldname) page = req.file.originalname;
-        let smooth = 1;
-        if (!page) smooth = 0;
-    
+        // let page;
+        // page = req.file.originalname;
+        // let smooth = 0;
+        // if (!page) smooth = 0;
+
         // console.log(page.length)
-        let size = 0;
-        if (page.length && smooth) size = 1;
+        let size = 1;
+        // if (page.length && smooth) size = 1;
         // Check if already logged in ?
         if (req.session && req.session.userid) {
-          res.json({
-            status: "warn",
-            message: "Session already exists !",
-            isLogged: true,
-            lastUpdated: req.session.lastUpdated,
-            isLatest: false,
-            // keys: req.session.keys,
-            profile: req.session.profile,
-          });
+            res.json({
+                status: "warn",
+                message: "Session already exists !",
+                isLogged: true,
+                lastUpdated: req.session.lastUpdated,
+                isLatest: false,
+                // keys: req.session.keys,
+                profile: req.session.profile,
+            });
         }
         // check if any value is not null
-        else if (size != 0 
-            && k.tenderName 
-            && k.email 
+        else if (size != 0
+            && edm
+            && pan
+            && aadhar
+            && k.tenderName
+            && k.email
             && k.tenderValue
-            && k.endDate ) {
-          // check if record already exists...
-          db.collection("tender_files").findOne(
-            
-            { projection: { _id: 1, email: 1, tenderName: 1 } },
-            (error, result) => {
-              if (result && result._id) {
-                res.json({
-                  status: "error",
-                  message: "File already exists !",
-                  isLogged: false,
-                });
-              }
-              // tenserName doesn't exists, create one
-              else {
-                let obj = {
-                  tenderName: k.tenderName,
-                  email: k.email,
-                  profile: {
-                    tenderName: k.tenderName,
-                    email: k.email,
-                    endDate:k.endDate,
-                    file: req.file,
-                    tenderValue: k.tenderValue,
-                  },
-                };
-                db.collection("tender_files").insertOne(obj, (error, results) => {
-                  if (error) {
-                    res.json({
-                      status: "error",
-                      message: error,
-                      isLogged: false,
-                    });
-                    throw error;
-                  }
-                  // Records inserted, auto log in
-                  else {
-                    // log it in
-                    res.json({
-                      status: "success",
-                      message: "File Uploaded !",
-                      isLatest: true,
-                      isLogged: true,
-                      profile: obj.profile,
-                    });
-                  }
-                });
-              }
-            }
-          );
+            && k.amountWords
+            && k.endDate) {
+            // check if record already exists...
+            db.collection("tender_files").findOne(
+                { projection: { _id: 1, email: 1, tenderName: 1 } },
+                (error, result) => {
+                    if (result && result._id) {
+                        res.json({
+                            status: "error",
+                            message: "File already exists !",
+                            isLogged: false,
+                        });
+                    }
+                    // tenserName doesn't exists, create one
+                    else {
+                        let obj = {
+                            tenderName: k.tenderName,
+                            email: k.email,
+                            profile: {
+                                tenderName: k.tenderName,
+                                email: k.email,
+                                endDate: k.endDate,
+                                amountWords: k.amountWords,
+                                edm: edm,
+                                pan:pan,
+                                aadhar:aadhar,
+                                tenderValue: k.tenderValue,
+                            },
+                        };
+                        // Object.assign(obj, { elem[0]: { elem[0]:obj1 }});
+                        // console.log("object " + obj);
+                        db.collection("tender_files").insertOne(obj, (error, results) => {
+                            if (error) {
+                                res.json({
+                                    status: "error",
+                                    message: error,
+                                    isLogged: false,
+                                });
+                                throw error;
+                            }
+                            // Records inserted, auto log in
+                            else {
+                                // log it in
+                                res.json({
+                                    status: "success",
+                                    message: "File Uploaded !",
+                                    isLatest: true,
+                                    isLogged: true,
+                                    profile: obj.profile,
+                                });
+                            }
+                        });
+                    }
+                }
+            );
         } else {
-          // some fields are null
-          res.json({
-            status: "error",
-            message: "Empty or invalid data",
-            isLogged: false,
-          });
+            // some fields are null
+            res.json({
+                status: "error",
+                message: "Empty or invalid data",
+                isLogged: false,
+            });
         }
-      });
+    });
+  
     // =======================================================================*******************************================================
     // =======================================================================*******************************================================
     // get all vendors
@@ -320,7 +337,7 @@ module.exports = function (app, db) {
         // downloadFile(k.url,link);
         if (k.path_url) {
             const fname = path.basename(k.path_url);
-            let link = folder+"/" + fname;
+            let link = folder + "/" + fname;
             downloadFile(k.path_url, link);
             console.log(k.path_url + "downloaded successfully");
 
