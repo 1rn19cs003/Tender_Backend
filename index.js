@@ -29,8 +29,8 @@ app.use(
 );
 // enabling CROS
 
-let origins = ["https://tendermanagement.netlify.app"]
-if (process.env.NODE_ENV === "development") origins.push("https://tendermanagement.netlify.app")
+let origins = ["https://murudeshwartempletender.com"]
+if (process.env.NODE_ENV === "development") origins.push("https://murudeshwartempletender.com")
 app.use(function (req, res, next) {
     if (origins.includes(req.headers.origin)) {
         res.header("Access-Control-Allow-Origin", req.headers.origin) // restrict it to the required domain
