@@ -32,6 +32,14 @@ nodemailer.createTestAccount((err, account) => {
     }
 
 */
+// Message object
+// let message = {
+//     from: "abhigrmr@gmail.com",
+//     to: `${reciever}`,
+//     subject: "Nodemailer is unicode friendly ✔",
+//     text: "Hello to myself!",
+//     html: "<p><b>Hello</b> to myself!</p>",
+// }
 
 const email = message =>
     new Promise((resolve, reject) => {
@@ -47,5 +55,4 @@ const email = message =>
             resolve({ isSent: true, message, info })
         })
     })
-
 module.exports = email

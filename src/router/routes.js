@@ -1,11 +1,11 @@
 // const dbConnect=require('./mongodb');
 const multer = require('multer');
-const https = require("https");
 const fs = require("fs");
-const path = require("path");
 require("dotenv").config();
 const aws = require('aws-sdk')
 const multerS3 = require('multer-s3')
+const nodemailer = require('nodemailer');
+const randomstring = require('randomstring');
 
 module.exports = function (app, db) {
     // dummy route
@@ -334,6 +334,152 @@ module.exports = function (app, db) {
     })
 
 
+    // =======================================================================*******************************================================
+    // =======================================================================*******************************================================
+    // forgot password API
+    const config = require("../config/config");
+    const sendRestPasswordMail = async (name, email, token) => {
+        try {
+            // transporter = nodemailer.createTransport({
+            //     host: account.smtp.host,
+            //     port: account.smtp.port,
+            //     secure: account.smtp.secure,
+            //     auth: {
+            //         user: account.user,
+            //         pass: account.pass,
+            //     },
+            // })
+            const transporter = nodemailer.createTransport({
+                host: 'smtp.gmail.com',
+                port: 465,
+                pool: true,
+                secure: true,
+                auth: {
+                    user: config.emailUser,
+                    pass: config.emailPassword,
+                },
+                tls: {
+                    rejectUnauthorized: false
+                }
+            });
+            const mailOptions = {
+                from: config.emailUser,
+                to: email,
+                subject: 'For Reset Password',
+                html: '<p>Hii ' + name + ',<br> <br> Please copy the link and <a href=http://localhost:6969/reset_password?token=' + token + '">reset your password </a>'
+            }
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.log(error);
+                }
+                else {
+
+                    console.log("Mail has been sent ", info.response);
+                }
+            });
+
+        } catch (error) {
+            res.status(400).send({
+                sucess: false,
+                message: error,
+            })
+        }
+
+    }
+    app.post("/forgot_password", (req, res) => {
+        let k = req.body;
+        try {
+            db.collection("members").findOne(
+                { email: k.email },
+                { projection: { _id: 1, email: 1, name: 1 } },
+                (error, results) => {
+                    if (results && results._id) {
+                        // res.json({
+                        //     result
+                        // });
+                        // const resu = db.collection("files").deleteOne({ tenderName: k.tenderName });
+                        // res.send(resu);
+                        const randomString = randomstring.generate();
+                        db.collection("members").findOneAndUpdate(
+                            { email: k.email },
+                            { $set: { token: randomString } }
+                        )
+                        sendRestPasswordMail(results.name, k.email, randomString);
+                        res.status(200).send({
+                            sucess: true,
+                            msg: "Please check your mail!"
+                        })
+                        // res.json(results.name);
+                    }
+                    else {
+                        // console.log(results);
+                        // res.json(results);
+                        res.json({
+                            status: "error",
+                            message: "File found but Action Can't be performed ",
+                            isLogged: false,
+                        });
+                    }
+                });
+        } catch (error) {
+            res.json({
+                status: "error",
+                message: "Mail doesn't exist.",
+                isLogged: false,
+            });
+        }
+    })
+    // =======================================================================*******************************================================
+    // =======================================================================*******************************================================
+    // Reset Password
+    app.get("/reset_password", (req, res) => {
+        const passkey = req.body.password;
+        console.log(passkey);
+        if (!passkey) {
+            res.json({
+                status:"Error",
+                message: "new Password is required",
+                isLogged: false,
+            });
+        }
+        else {
+            try {
+                const tok = req.query.token;
+                db.collection("members").findOne(
+                    { token: tok },
+                    { projection: { _id: 1, token: 1 } },
+                    (error, results) => {
+                        if (results && results._id) {
+                            // console.log(results.password);
+                            db.collection("members").findOneAndUpdate(
+                                { token: tok },
+                                { $set: { password: passkey, token: '' } }, { new: true }
+                            )
+                            res.status(200).send({
+                                sucess: true,
+                                msg: "Password has been reset!",
+                                data: results,
+                            })
+                        }
+                        else {
+                            // console.log(results);
+                            // res.json(results);
+                            res.json({
+                                status: "error",
+                                message: "This link has been expired",
+                                isLogged: false,
+                            });
+                        }
+                    });
+            } catch (error) {
+                res.json({
+                    status: "error",
+                    message: error,
+                    isLogged: false,
+                });
+            }
+        }
+    })
     // =======================================================================*******************************================================
     // =======================================================================*******************************================================
     // get all vendors
