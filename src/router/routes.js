@@ -3,6 +3,9 @@ const multer = require('multer');
 const https = require("https");
 const fs = require("fs");
 const path = require("path");
+require("dotenv").config();
+const aws = require('aws-sdk')
+const multerS3 = require('multer-s3')
 
 module.exports = function (app, db) {
     // dummy route
@@ -21,49 +24,36 @@ module.exports = function (app, db) {
     // =========================================================================================
     // function to upload the files
     // cb means call back
-    const upload = multer({
-        storage: multer.diskStorage({
+
+    aws.config.update({
+        secretAccessKey: process.env.ACCESS_SECRET,
+        accessKeyId: process.env.ACCESS_KEY,
+        region: process.env.REGION,
+    });
+
+
+
+    const BUCKET_UPLOADS = process.env.BUCKET_UPLOADS
+    const s3 = new aws.S3();
+
+    const upload_data = multer({
+        storage: multerS3({
+            s3: s3,
+            bucket: BUCKET_UPLOADS,
             destination: function (req, file, cb) {
-                // console.log(file+" ");
-                // console.log(file.fieldname+" ");
-                // console.log(file.size);
-                // console.log(file.filename);
-                cb(null, "uploads")
+                cb(null, "tender_uploads")
             },
-            filename: function (req, file, cb) {
-                // console.log(file.originalname);
-                let name = file.originalname;
-                if (name.length) {
-                    // req.json({ file: req.file });
-                    // console.log(req.params);
-                    // console.log(name);
-                    // console.log(req.file);
-                    // console.log(name.length);
-                    // console.log(req.body);
-                }
+            key: function (req, file, cb) {
+                console.log(file);
                 cb(null, file.fieldname + "_" + Date.now() + ".pdf")
             }
         })
     }).single("file_upload");
-    app.post("/upload_vender_admin", upload, (req, res) => {
+    app.post('/upload_vender_admin', upload_data, async function (req, res, next) {
         let k = req.body;
-
-        let temp = req.file;
-        // console.log(temp);
-        // console.log(k);
-        // console.log(temp.fieldname);
-        let page;
-        if (temp.fieldname)
-            page = req.file.originalname;
-        let smooth = 1;
-        if (!page)
-            smooth = 0;
-
-        // console.log(page.length)
-        let size = 0;
-        if (page.length && smooth)
-            size = 1;
-        // check if any value is not null and logged in
+        console.log("Files");
+        let size = 1;
+        // console.log('Successfully uploaded ' + edm.fieldname + " " + pan.fieldname + " " + aadhar.fieldname + ' location!')
         if ((size != 0 && k.tenderName && k.startDate && k.endDate) || (req.session && req.session.userid)) {
             // check if record already exists...
             db.collection("files").findOne({ tenderName: k.tenderName }, { projection: { _id: 1, tenderName: 1 } }, (error, result) => {
@@ -115,58 +105,101 @@ module.exports = function (app, db) {
                 isLogged: false,
             })
         }
-    });
+    })
+
+
+    app.get("/list_admin", async (req, res) => {
+        try {
+            let result = await s3.listObjectsV2({ Bucket: BUCKET_UPLOADS }).promise()
+            let value = await result.Contents.map(item => item.Key);
+            console.log("result " + result)
+            console.log("value " + value)
+            res.send(value)
+        } catch (error) {
+            res.json({
+                status: "error",
+                message: error,
+            });
+        }
+    })
+
+    app.get("/download_admin/:filename", async (req, res) => {
+        try {
+            const filename = req.params.filename;
+            let x = await s3.getObject({ Bucket: BUCKET_UPLOADS, Key: filename }).promise();
+            res.send(x);
+            console.log(x);
+            // res.sendFile(path.join(x + req.params.filename))
+            res.send("File downLoaded");
+        }
+        catch (error) {
+            res.json({
+                status: "error",
+                message: error,
+            });
+        }
+    })
+
+    app.delete("/delete_admin/:filename", (req, res) => {
+
+        try {
+            const filename = req.params.filename;
+            let x = s3.deleteObject({ Bucket: BUCKET_UPLOADS, Key: filename }).promise();
+            res.json({
+                status: "Sucess",
+                message: "File deleted succesfully " + x,
+            });
+        }
+        catch (error) {
+            res.json({
+                status: "error",
+                message: error,
+            });
+        }
+    })
+
+
 
     // =======================================================================*******************************================================
     // =======================================================================*******************************================================
+
+    aws.config.update({
+        secretAccessKey: process.env.ACCESS_SECRET,
+        accessKeyId: process.env.ACCESS_KEY,
+        region: process.env.REGION,
+    });
+
+
+
+    const BUCKET_TENDER = process.env.BUCKET_TENDER
+
     const upload_PAN = multer({
-        storage: multer.diskStorage({
+        storage: multerS3({
+            s3: s3,
+            bucket: BUCKET_TENDER,
             destination: function (req, file, cb) {
-                // console.log(file+" ");
-                // console.log(file.fieldname+" ");
-                // console.log(file.size);
-                // console.log(file.filename);
-                cb(null, "uploads_tender")
+                cb(null, "tender_uploads")
             },
-            filename: function (req, file, cb) {
-                // console.log(file.originalname);
-                let name = file.originalname;
-                if (name.length) {
-                    // req.json({ file: req.file });
-                    // console.log(req.params);
-                    // console.log(name);
-                    // console.log(req.file);
-                    // console.log(name.length);
-                    // console.log(req.body);
-                }
+            key: function (req, file, cb) {
+                console.log(file);
                 cb(null, file.fieldname + "_" + Date.now() + ".pdf")
             }
         })
-    }).any('PAN_file', 'EMD_file', 'Aadhar_file')
-    app.post("/upload_tender_file", upload_PAN, (req, res) => {
-        let k = req.body;
+    }).any('EDM_file', 'PAN_file', 'aadhar_file')
+    app.post('/upload_file', upload_PAN, async function (req, res, next) {
         let f = req.files;
-        let temp = req.files.length;
-        // let files={}
-        let edm=f[0];
-        let pan=f[1];
-        let aadhar=f[2]
-        // console.log(f[0])
-        // f.forEach(elem => {
-        //     console.log("name "+elem.fieldname);
-        // });
-        console.log(temp);
-        console.log(k);
-        // console.log(temp.fieldname);
-        // let page;
-        // page = req.file.originalname;
-        // let smooth = 0;
-        // if (!page) smooth = 0;
-
-        // console.log(page.length)
+        let k = req.body;
+        console.log("Files");
+        // console.log(k);
+        // console.log(f);
+        let edm = f[0];
+        let pan = f[1];
+        let aadhar = f[2]
+        // console.log(edm.fieldname)
+        // console.log(pan.fieldname)
+        // console.log(aadhar.fieldname)
         let size = 1;
-        // if (page.length && smooth) size = 1;
-        // Check if already logged in ?
+        console.log('Successfully uploaded ' + edm.fieldname + " " + pan.fieldname + " " + aadhar.fieldname + ' location!')
         if (req.session && req.session.userid) {
             res.json({
                 status: "warn",
@@ -174,7 +207,6 @@ module.exports = function (app, db) {
                 isLogged: true,
                 lastUpdated: req.session.lastUpdated,
                 isLatest: false,
-                // keys: req.session.keys,
                 profile: req.session.profile,
             });
         }
@@ -210,8 +242,8 @@ module.exports = function (app, db) {
                                 endDate: k.endDate,
                                 amountWords: k.amountWords,
                                 edm: edm,
-                                pan:pan,
-                                aadhar:aadhar,
+                                pan: pan,
+                                aadhar: aadhar,
                                 tenderValue: k.tenderValue,
                             },
                         };
@@ -249,8 +281,59 @@ module.exports = function (app, db) {
                 isLogged: false,
             });
         }
-    });
-  
+    })
+
+
+    app.get("/list", async (req, res) => {
+        try {
+            let result = await s3.listObjectsV2({ Bucket: BUCKET_TENDER }).promise()
+            let value = await result.Contents.map(item => item.Key);
+            console.log("result " + result)
+            console.log("value " + value)
+            res.send(value)
+        } catch (error) {
+            res.json({
+                status: "error",
+                message: error,
+            });
+        }
+    })
+
+    app.get("/download/:filename", async (req, res) => {
+        try {
+            const filename = req.params.filename;
+            let x = await s3.getObject({ Bucket: BUCKET_TENDER, Key: filename }).promise();
+            res.send(x);
+            console.log(x);
+            // res.sendFile(path.join(x + req.params.filename))
+            res.send("File downLoaded");
+        } catch (error) {
+            res.json({
+                status: "error",
+                message: error,
+            });
+        }
+    })
+
+    app.delete("/delete/:filename", (req, res) => {
+        try {
+            const filename = req.params.filename;
+            let x = s3.deleteObject({ Bucket: BUCKET_TENDER, Key: filename }).promise();
+            res.json({
+                status: "Sucess",
+                message: "File deleted succesfully " + x,
+
+            });
+        }
+        catch (error) {
+            res.json({
+                status: "error",
+                message: error,
+            });
+        }
+    })
+
+
     // =======================================================================*******************************================================
     // =======================================================================*******************************================================
     // get all vendors
@@ -453,7 +536,7 @@ module.exports = function (app, db) {
                     // res.json({
                     //     result
                     // });
-                    const resu = db.collection("tender_files").deleteMany({ tenderName: k.tenderName ,email:k.email});
+                    const resu = db.collection("tender_files").deleteMany({ tenderName: k.tenderName, email: k.email });
                     // res.send(resu);
                     console.log(resu);
                     res.send(resu);
