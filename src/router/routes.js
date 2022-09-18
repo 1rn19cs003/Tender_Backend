@@ -483,45 +483,45 @@ module.exports = function (app, db) {
     // =======================================================================*******************************================================
     // =======================================================================*******************************================================
     // Update vendors
-    const updateValueMail = async (name, email, token)=> {
-        try {
-            const transporter = nodemailer.createTransport({
-                host: 'smtp.gmail.com',
-                port: 465,
-                pool: true,
-                secure: true,
-                auth: {
-                    user: config.emailUser,
-                    pass: config.emailPassword,
-                },
-                tls: {
-                    rejectUnauthorized: false
-                }
-            });
-            const mailOptions = {
-                from: config.emailUser,
-                to: email,
-                subject: 'For Update Value',
-                html: '<p>Hii ' + name + ',<br> <br> Please copy the link and <a href=https://murudeshwartempletender.com/update_value?token=' + token + '>Update your Tender Value </a>'
-            }
-            transporter.sendMail(mailOptions, function (error, info) {
-                if (error) {
-                    console.log(error);
-                }
-                else {
+    // const updateValueMail = async (name, email, token)=> {
+    //     try {
+    //         const transporter = nodemailer.createTransport({
+    //             host: 'smtp.gmail.com',
+    //             port: 465,
+    //             pool: true,
+    //             secure: true,
+    //             auth: {
+    //                 user: config.emailUser,
+    //                 pass: config.emailPassword,
+    //             },
+    //             tls: {
+    //                 rejectUnauthorized: false
+    //             }
+    //         });
+    //         const mailOptions = {
+    //             from: config.emailUser,
+    //             to: email,
+    //             subject: 'For Update Value',
+    //             html: '<p>Hii ' + name + ',<br> <br> Please copy the link and <a href=https://murudeshwartempletender.com/update_value?token=' + token + '>Update your Tender Value </a>'
+    //         }
+    //         transporter.sendMail(mailOptions, function (error, info) {
+    //             if (error) {
+    //                 console.log(error);
+    //             }
+    //             else {
 
-                    console.log("Mail has been sent ", info.response);
-                }
-            });
+    //                 console.log("Mail has been sent ", info.response);
+    //             }
+    //         });
 
-        } catch (error) {
-            res.status(400).send({
-                sucess: false,
-                message: error,
-            })
-        }
+    //     } catch (error) {
+    //         res.status(400).send({
+    //             sucess: false,
+    //             message: error,
+    //         })
+    //     }
 
-    }
+    // }
     app.post("/update_vender", (req, res) => {
         let k = req.body;
         try {
@@ -540,15 +540,15 @@ module.exports = function (app, db) {
                         let id=results._id;
                         id=id.str;
                         console.log(id);
-                        const randomString = randomstring.generate();
+                        // const randomString = randomstring.generate();
                         db.collection("tender_files").findOneAndUpdate(
                             { email: results.email,tenderName:k.tenderName},
-                            { $set: { token: randomString } }
+                            { $set: { tenderValue: k.tenderValue } }
                         )
-                        updateValueMail(results.tenderName,k.email,randomString);
+                        // updateValueMail(results.tenderName,k.email,randomString);
                         res.status(200).send({
                             sucess: true,
-                            msg: "Please check your mail!"
+                            msg: "Value has been Updated!"
                         })
                     }
                     else {
