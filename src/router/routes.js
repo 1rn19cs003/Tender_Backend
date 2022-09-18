@@ -236,6 +236,7 @@ module.exports = function (app, db) {
                         let obj = {
                             tenderName: k.tenderName,
                             email: k.email,
+                            tenderValue: k.tenderValue,
                             profile: {
                                 tenderName: k.tenderName,
                                 email: k.email,
@@ -340,15 +341,6 @@ module.exports = function (app, db) {
     const config = require("../config/config");
     const sendRestPasswordMail = async (name, email, token) => {
         try {
-            // transporter = nodemailer.createTransport({
-            //     host: account.smtp.host,
-            //     port: account.smtp.port,
-            //     secure: account.smtp.secure,
-            //     auth: {
-            //         user: account.user,
-            //         pass: account.pass,
-            //     },
-            // })
             const transporter = nodemailer.createTransport({
                 host: 'smtp.gmail.com',
                 port: 465,
@@ -366,7 +358,7 @@ module.exports = function (app, db) {
                 from: config.emailUser,
                 to: email,
                 subject: 'For Reset Password',
-                html: '<p>Hii ' + name + ',<br> <br> Please copy the link and <a href=http://localhost:6969/reset_password?token=' + token + '">reset your password </a>'
+                html: '<p>Hii ' + name + ',<br> <br> Please copy the link and <a href=https://murudeshwartempletender.com/reset_password?token=' + token + '">reset your password </a>'
             }
             transporter.sendMail(mailOptions, function (error, info) {
                 if (error) {
@@ -430,6 +422,14 @@ module.exports = function (app, db) {
         }
     })
     // =======================================================================*******************************================================
+
+
+    /**
+     * app.post("/forgot_password") API to forgot password
+     *      forgot password API requires mail for whom we have to reset the password
+     * app.get("/reset_password") API to reset password
+     *      requires the new password in body
+     */
     // =======================================================================*******************************================================
     // Reset Password
     app.get("/reset_password", (req, res) => {
@@ -458,6 +458,144 @@ module.exports = function (app, db) {
                             res.status(200).send({
                                 sucess: true,
                                 msg: "Password has been reset!",
+                                data: results,
+                            })
+                        }
+                        else {
+                            // console.log(results);
+                            // res.json(results);
+                            res.json({
+                                status: "error",
+                                message: "This link has been expired",
+                                isLogged: false,
+                            });
+                        }
+                    });
+            } catch (error) {
+                res.json({
+                    status: "error",
+                    message: error,
+                    isLogged: false,
+                });
+            }
+        }
+    })
+    // =======================================================================*******************************================================
+    // =======================================================================*******************************================================
+    // Update vendors
+    const updateValueMail = async (name, email, token)=> {
+        try {
+            const transporter = nodemailer.createTransport({
+                host: 'smtp.gmail.com',
+                port: 465,
+                pool: true,
+                secure: true,
+                auth: {
+                    user: config.emailUser,
+                    pass: config.emailPassword,
+                },
+                tls: {
+                    rejectUnauthorized: false
+                }
+            });
+            const mailOptions = {
+                from: config.emailUser,
+                to: email,
+                subject: 'For Update Value',
+                html: '<p>Hii ' + name + ',<br> <br> Please copy the link and <a href=https://murudeshwartempletender.com/update_value?token=' + token + '">Update your Tender Value </a>'
+            }
+            transporter.sendMail(mailOptions, function (error, info) {
+                if (error) {
+                    console.log(error);
+                }
+                else {
+
+                    console.log("Mail has been sent ", info.response);
+                }
+            });
+
+        } catch (error) {
+            res.status(400).send({
+                sucess: false,
+                message: error,
+            })
+        }
+
+    }
+    app.post("/update_vender", (req, res) => {
+        let k = req.body;
+        try {
+            db.collection("tender_files").findOne(
+                { email: k.email ,
+                tenderName:k.tenderName },
+                { projection: { _id: 1, email: 1, tenderName: 1, tenderValue: 1 } },
+                (error, results) => {
+                    if (results && results._id) {
+                        console.log("???")
+                        console.log(results._id)
+                        // res.json(results); 
+                        // res.json({
+                        //     result
+                        // });
+                        let id=results._id;
+                        id=id.str;
+                        console.log(id);
+                        const randomString = randomstring.generate();
+                        db.collection("tender_files").findOneAndUpdate(
+                            { email: results.email,tenderName:k.tenderName},
+                            { $set: { token: randomString } }
+                        )
+                        updateValueMail(results.tenderName,k.email,randomString);
+                        res.status(200).send({
+                            sucess: true,
+                            msg: "Please check your mail!"
+                        })
+                    }
+                    else {
+                        // console.log(results);
+                        // res.json(results);
+                        res.json({
+                            status: "error",
+                            message: "File found but Action Can't be performed ",
+                            isLogged: false,
+                        });
+                    }
+                });
+        } catch (error) {
+            res.json({
+                status: "error",
+                message: "Mail doesn't exist. "+error,
+                isLogged: false,
+            });
+        }
+    })
+
+    app.get("/update_value", (req, res) => {
+        const value = req.body.tenderValue;
+        console.log(value);
+        if (!value) {
+            res.json({
+                status: "Error",
+                message: "new Password is required",
+                isLogged: false,
+            });
+        }
+        else {
+            try {
+                const tok = req.query.token;
+                db.collection("tender_files").findOne(
+                    { token: tok },
+                    { projection: { _id: 1, token: 1 } },
+                    (error, results) => {
+                        if (results && results._id) {
+                            // console.log(results.password);
+                            db.collection("tender_files").findOneAndUpdate(
+                                { token: tok },
+                                { $set: { tenderValue: value, token: '' } }, { new: true }
+                            )
+                            res.status(200).send({
+                                sucess: true,
+                                msg: "Value has been Updated!",
                                 data: results,
                             })
                         }
@@ -811,6 +949,7 @@ module.exports = function (app, db) {
                     else {
                         let obj = {
                             email: k.email,
+                            name: k.name,
                             profile: {
                                 name: k.name,
                                 organization: k.organization,
