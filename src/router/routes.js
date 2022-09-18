@@ -358,7 +358,7 @@ module.exports = function (app, db) {
                 from: config.emailUser,
                 to: email,
                 subject: 'For Reset Password',
-                html: '<p>Hii ' + name + ',<br> <br> Please copy the link and <a href=https://murudeshwartempletender.com/reset_password?token=' + token + '">reset your password </a>'
+                html: '<p>Hii ' + name + ',<br> <br> Please copy the link and <a href=https://murudeshwartempletender.com/reset_password?token=' + token + '>reset your password </a>'
             }
             transporter.sendMail(mailOptions, function (error, info) {
                 if (error) {
@@ -502,7 +502,7 @@ module.exports = function (app, db) {
                 from: config.emailUser,
                 to: email,
                 subject: 'For Update Value',
-                html: '<p>Hii ' + name + ',<br> <br> Please copy the link and <a href=https://murudeshwartempletender.com/update_value?token=' + token + '">Update your Tender Value </a>'
+                html: '<p>Hii ' + name + ',<br> <br> Please copy the link and <a href=https://murudeshwartempletender.com/update_value?token=' + token + '>Update your Tender Value </a>'
             }
             transporter.sendMail(mailOptions, function (error, info) {
                 if (error) {
