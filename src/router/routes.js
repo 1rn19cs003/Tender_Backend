@@ -245,7 +245,6 @@ module.exports = function (app, db) {
                                 edm: edm,
                                 pan: pan,
                                 aadhar: aadhar,
-                                tenderValue: k.tenderValue,
                             },
                         };
                         // Object.assign(obj, { elem[0]: { elem[0]:obj1 }});
@@ -529,28 +528,25 @@ module.exports = function (app, db) {
             db.collection("tender_files").findOne(
                 { email: k.email ,
                 tenderName:k.tenderName },
-                { projection: { _id: 1, email: 1, tenderName: 1, tenderValue: 1 } },
+                { projection: { _id: 1, email: 1, tenderName: 1, tenderValue: 1 ,profile:1 } },
                 (error, results) => {
                     if (results && results._id) {
                         console.log("???")
-                        console.log(results._id)
                         // res.json(results); 
                         // res.json({
-                        //     result
-                        // });
-                        let id=results._id;
-                        id=id.str;
-                        console.log(id);
-                        // const randomString = randomstring.generate();
-                        db.collection("tender_files").findOneAndUpdate(
-                            { email: results.email,tenderName:k.tenderName},
-                            { $set: { tenderValue: k.tenderValue } }
-                        )
+                            //     result
+                            // });
+                            // const randomString = randomstring.generate();
+                            db.collection("tender_files").findOneAndUpdate(
+                                { email: results.email,tenderName:k.tenderName},
+                                { $set: { tenderValue: k.tenderValue} }
+                            )
+                            res.json(results)
                         // updateValueMail(results.tenderName,k.email,randomString);
-                        res.status(200).send({
-                            sucess: true,
-                            msg: "Value has been Updated!"
-                        })
+                        // res.status(200).send({
+                        //     sucess: true,
+                        //     msg: "Value has been Updated!"
+                        // })
                     }
                     else {
                         // console.log(results);
