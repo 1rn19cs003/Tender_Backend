@@ -339,47 +339,48 @@ module.exports = function (app, db) {
     // =======================================================================*******************************================================
     // forgot password API
     const config = require("../config/config");
-    const sendRestPasswordMail = async (name, email, token) => {
-        try {
-            const transporter = nodemailer.createTransport({
-                host: 'smtp.gmail.com',
-                port: 465,
-                pool: true,
-                secure: true,
-                auth: {
-                    user: config.emailUser,
-                    pass: config.emailPassword,
-                },
-                tls: {
-                    rejectUnauthorized: false
-                }
-            });
-            const mailOptions = {
-                from: config.emailUser,
-                to: email,
-                subject: 'For Reset Password',
-                html: '<p>Hii ' + name + ',<br> <br> Please copy the link and <a href=https://murudeshwartempletender.com/reset_password?token=' + token + '>reset your password </a>'
-            }
-            transporter.sendMail(mailOptions, function (error, info) {
-                if (error) {
-                    console.log(error);
-                }
-                else {
+    // const sendRestPasswordMail = async (name, email, token) => {
+    //     try {
+    //         const transporter = nodemailer.createTransport({
+    //             host: 'smtp.gmail.com',
+    //             port: 465,
+    //             pool: true,
+    //             secure: true,
+    //             auth: {
+    //                 user: config.emailUser,
+    //                 pass: config.emailPassword,
+    //             },
+    //             tls: {
+    //                 rejectUnauthorized: false
+    //             }
+    //         });
+    //         const mailOptions = {
+    //             from: config.emailUser,
+    //             to: email,
+    //             subject: 'For Reset Password',
+    //             html: '<p>Hii ' + name + ',<br> <br> Please copy the link and <a href=https://murudeshwartempletender.com/reset_password?token=' + token + '>reset your password </a>'
+    //         }
+    //         transporter.sendMail(mailOptions, function (error, info) {
+    //             if (error) {
+    //                 console.log(error);
+    //             }
+    //             else {
 
-                    console.log("Mail has been sent ", info.response);
-                }
-            });
+    //                 console.log("Mail has been sent ", info.response);
+    //             }
+    //         });
 
-        } catch (error) {
-            res.status(400).send({
-                sucess: false,
-                message: error,
-            })
-        }
+    //     } catch (error) {
+    //         res.status(400).send({
+    //             sucess: false,
+    //             message: error,
+    //         })
+    //     }
 
-    }
+    // }
     app.post("/forgot_password", (req, res) => {
         let k = req.body;
+
         try {
             db.collection("members").findOne(
                 { email: k.email },
@@ -391,15 +392,15 @@ module.exports = function (app, db) {
                         // });
                         // const resu = db.collection("files").deleteOne({ tenderName: k.tenderName });
                         // res.send(resu);
-                        const randomString = randomstring.generate();
+                        // const randomString = randomstring.generate();
                         db.collection("members").findOneAndUpdate(
                             { email: k.email },
-                            { $set: { token: randomString } }
+                            { $set: { password: k.password} },
                         )
-                        sendRestPasswordMail(results.name, k.email, randomString);
+                        // sendRestPasswordMail(results.name, k.email, randomString);
                         res.status(200).send({
                             sucess: true,
-                            msg: "Please check your mail!"
+                            msg: "Password has been updated!"
                         })
                         // res.json(results.name);
                     }
@@ -432,54 +433,54 @@ module.exports = function (app, db) {
      */
     // =======================================================================*******************************================================
     // Reset Password
-    app.get("/reset_password", (req, res) => {
-        const passkey = req.body.password;
-        console.log(passkey);
-        if (!passkey) {
-            res.json({
-                status:"Error",
-                message: "new Password is required",
-                isLogged: false,
-            });
-        }
-        else {
-            try {
-                const tok = req.query.token;
-                db.collection("members").findOne(
-                    { token: tok },
-                    { projection: { _id: 1, token: 1 } },
-                    (error, results) => {
-                        if (results && results._id) {
-                            // console.log(results.password);
-                            db.collection("members").findOneAndUpdate(
-                                { token: tok },
-                                { $set: { password: passkey, token: '' } }, { new: true }
-                            )
-                            res.status(200).send({
-                                sucess: true,
-                                msg: "Password has been reset!",
-                                data: results,
-                            })
-                        }
-                        else {
-                            // console.log(results);
-                            // res.json(results);
-                            res.json({
-                                status: "error",
-                                message: "This link has been expired",
-                                isLogged: false,
-                            });
-                        }
-                    });
-            } catch (error) {
-                res.json({
-                    status: "error",
-                    message: error,
-                    isLogged: false,
-                });
-            }
-        }
-    })
+    // app.get("/reset_password", (req, res) => {
+    //     const passkey = req.body.password;
+    //     console.log(passkey);
+    //     if (!passkey) {
+    //         res.json({
+    //             status:"Error",
+    //             message: "new Password is required",
+    //             isLogged: false,
+    //         });
+    //     }
+    //     else {
+    //         try {
+    //             const tok = req.query.token;
+    //             db.collection("members").findOne(
+    //                 { token: tok },
+    //                 { projection: { _id: 1, token: 1 } },
+    //                 (error, results) => {
+    //                     if (results && results._id) {
+    //                         // console.log(results.password);
+    //                         db.collection("members").findOneAndUpdate(
+    //                             { token: tok },
+    //                             { $set: { password: passkey, token: '' } }, { new: true }
+    //                         )
+    //                         res.status(200).send({
+    //                             sucess: true,
+    //                             msg: "Password has been reset!",
+    //                             data: results,
+    //                         })
+    //                     }
+    //                     else {
+    //                         // console.log(results);
+    //                         // res.json(results);
+    //                         res.json({
+    //                             status: "error",
+    //                             message: "This link has been expired",
+    //                             isLogged: false,
+    //                         });
+    //                     }
+    //                 });
+    //         } catch (error) {
+    //             res.json({
+    //                 status: "error",
+    //                 message: error,
+    //                 isLogged: false,
+    //             });
+    //         }
+    //     }
+    // })
     // =======================================================================*******************************================================
     // =======================================================================*******************************================================
     // Update vendors
