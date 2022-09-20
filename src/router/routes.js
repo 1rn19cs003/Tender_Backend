@@ -814,6 +814,41 @@ module.exports = function (app, db) {
     })
     // =======================================================================*******************************================================
     // =======================================================================*******************************================================
+    app.post("/update_withdraw", (req, res) => {
+        let k = req.body;
+        try {
+            db.collection("tender_files").findOne(
+                {
+                    email: k.email,
+                    tenderName: k.tenderName
+                },
+                { projection: { _id: 1, email: 1, tenderName: 1, tenderValue: 1, profile: 1 } },
+                (error, results) => {
+                    if (results && results._id) {
+                        db.collection("tender_files").findOneAndUpdate(
+                            { email: results.email, tenderName: k.tenderName },
+                            { $set:  { withdraw: k.withdraw }}, { new: true }
+                        )
+                        res.json(results)
+                    }
+                    else {
+                        res.json({
+                            status: "error",
+                            message: "User Doesn't Exists ! ",
+                            isLogged: false,
+                        });
+                    }
+                });
+        } catch (error) {
+            res.json({
+                status: "error",
+                message: "Error " + error,
+                isLogged: false,
+            });
+        }
+    })
+    // =======================================================================*******************************================================
+    // =======================================================================*******************************================================
     // get all vendors
     app.get("/all_vendors", (req, res) => {
         try {
