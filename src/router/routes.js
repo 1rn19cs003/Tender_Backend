@@ -173,7 +173,7 @@ module.exports = function (app, db) {
 
     const BUCKET_TENDER = process.env.BUCKET_TENDER
 
-    const upload_PAN = multer({
+    const upload_files = multer({
         storage: multerS3({
             s3: s3,
             bucket: BUCKET_TENDER,
@@ -186,7 +186,7 @@ module.exports = function (app, db) {
             }
         })
     }).any('EDM_file', 'PAN_file', 'aadhar_file')
-    app.post('/upload_file', upload_PAN, async function (req, res, next) {
+    app.post('/upload_file', upload_files, async function (req, res, next) {
         let f = req.files;
         let k = req.body;
         console.log("Files");
@@ -237,6 +237,7 @@ module.exports = function (app, db) {
                             tenderName: k.tenderName,
                             email: k.email,
                             tenderValue: k.tenderValue,
+                            withdraw: k.withdraw,
                             profile: {
                                 tenderName: k.tenderName,
                                 email: k.email,
@@ -337,46 +338,8 @@ module.exports = function (app, db) {
     // =======================================================================*******************************================================
     // =======================================================================*******************************================================
     // forgot password API
-    const config = require("../config/config");
-    // const sendRestPasswordMail = async (name, email, token) => {
-    //     try {
-    //         const transporter = nodemailer.createTransport({
-    //             host: 'smtp.gmail.com',
-    //             port: 465,
-    //             pool: true,
-    //             secure: true,
-    //             auth: {
-    //                 user: config.emailUser,
-    //                 pass: config.emailPassword,
-    //             },
-    //             tls: {
-    //                 rejectUnauthorized: false
-    //             }
-    //         });
-    //         const mailOptions = {
-    //             from: config.emailUser,
-    //             to: email,
-    //             subject: 'For Reset Password',
-    //             html: '<p>Hii ' + name + ',<br> <br> Please copy the link and <a href=https://murudeshwartempletender.com/reset_password?token=' + token + '>reset your password </a>'
-    //         }
-    //         transporter.sendMail(mailOptions, function (error, info) {
-    //             if (error) {
-    //                 console.log(error);
-    //             }
-    //             else {
+    // const config = require("../config/config");
 
-    //                 console.log("Mail has been sent ", info.response);
-    //             }
-    //         });
-
-    //     } catch (error) {
-    //         res.status(400).send({
-    //             sucess: false,
-    //             message: error,
-    //         })
-    //     }
-
-    // }
     app.post("/forgot_password", (req, res) => {
         let k = req.body;
 
@@ -394,7 +357,7 @@ module.exports = function (app, db) {
                         // const randomString = randomstring.generate();
                         db.collection("members").findOneAndUpdate(
                             { email: k.email },
-                            { $set: { password: k.password} },
+                            { $set: { password: k.password } },
                         )
                         // sendRestPasswordMail(results.name, k.email, randomString);
                         res.status(200).send({
@@ -422,8 +385,6 @@ module.exports = function (app, db) {
         }
     })
     // =======================================================================*******************************================================
-
-
     /**
      * app.post("/forgot_password") API to forgot password
      *      forgot password API requires mail for whom we have to reset the password
@@ -482,66 +443,28 @@ module.exports = function (app, db) {
     // })
     // =======================================================================*******************************================================
     // =======================================================================*******************************================================
-    // Update vendors
-    // const updateValueMail = async (name, email, token)=> {
-    //     try {
-    //         const transporter = nodemailer.createTransport({
-    //             host: 'smtp.gmail.com',
-    //             port: 465,
-    //             pool: true,
-    //             secure: true,
-    //             auth: {
-    //                 user: config.emailUser,
-    //                 pass: config.emailPassword,
-    //             },
-    //             tls: {
-    //                 rejectUnauthorized: false
-    //             }
-    //         });
-    //         const mailOptions = {
-    //             from: config.emailUser,
-    //             to: email,
-    //             subject: 'For Update Value',
-    //             html: '<p>Hii ' + name + ',<br> <br> Please copy the link and <a href=https://murudeshwartempletender.com/update_value?token=' + token + '>Update your Tender Value </a>'
-    //         }
-    //         transporter.sendMail(mailOptions, function (error, info) {
-    //             if (error) {
-    //                 console.log(error);
-    //             }
-    //             else {
-
-    //                 console.log("Mail has been sent ", info.response);
-    //             }
-    //         });
-
-    //     } catch (error) {
-    //         res.status(400).send({
-    //             sucess: false,
-    //             message: error,
-    //         })
-    //     }
-
-    // }
     app.post("/update_vender", (req, res) => {
         let k = req.body;
         try {
             db.collection("tender_files").findOne(
-                { email: k.email ,
-                tenderName:k.tenderName },
-                { projection: { _id: 1, email: 1, tenderName: 1, tenderValue: 1 ,profile:1 } },
+                {
+                    email: k.email,
+                    tenderName: k.tenderName
+                },
+                { projection: { _id: 1, email: 1, tenderName: 1, tenderValue: 1, profile: 1 } },
                 (error, results) => {
                     if (results && results._id) {
                         console.log("???")
                         // res.json(results); 
                         // res.json({
-                            //     result
-                            // });
-                            // const randomString = randomstring.generate();
-                            db.collection("tender_files").findOneAndUpdate(
-                                { email: results.email,tenderName:k.tenderName},
-                                { $set: { tenderValue: k.tenderValue} }
-                            )
-                            res.json(results)
+                        //     result
+                        // });
+                        // const randomString = randomstring.generate();
+                        db.collection("tender_files").findOneAndUpdate(
+                            { email: results.email, tenderName: k.tenderName },
+                            { $set: { tenderValue: k.tenderValue } }
+                        )
+                        res.json(results)
                         // updateValueMail(results.tenderName,k.email,randomString);
                         // res.status(200).send({
                         //     sucess: true,
@@ -561,7 +484,7 @@ module.exports = function (app, db) {
         } catch (error) {
             res.json({
                 status: "error",
-                message: "Mail doesn't exist. "+error,
+                message: "Mail doesn't exist. " + error,
                 isLogged: false,
             });
         }
@@ -573,7 +496,7 @@ module.exports = function (app, db) {
         if (!value) {
             res.json({
                 status: "Error",
-                message: "new Password is required",
+                message: "New value field can't be empty",
                 isLogged: false,
             });
         }
@@ -613,6 +536,280 @@ module.exports = function (app, db) {
                     isLogged: false,
                 });
             }
+        }
+    })
+    // =======================================================================*******************************================================
+    // =======================================================================*******************************================================
+    // To update the EDM file
+    // const BUCKET_TENDER = process.env.BUCKET_TENDER
+
+    const upload_EDM = multer({
+        storage: multerS3({
+            s3: s3,
+            bucket: BUCKET_TENDER,
+            destination: function (req, file, cb) {
+                cb(null, "tender_uploads")
+            },
+            key: function (req, file, cb) {
+                console.log(file);
+                cb(null, file.fieldname + "_" + Date.now() + ".pdf")
+            }
+        })
+    }).single('EDM_file')
+    app.post('/upload_edm', upload_EDM, async function (req, res, next) {
+        let f = req.file;
+        let k = req.body;
+        console.log(k);
+        console.log("Files");
+        // let edm = f;
+        let size = 1;
+        console.log(f);
+        console.log('Successfully uploaded ' + f.fieldname + ' location!')
+        if (req.session && req.session.userid) {
+            res.json({
+                status: "warn",
+                message: "Session already exists !",
+                isLogged: true,
+                lastUpdated: req.session.lastUpdated,
+                isLatest: false,
+                profile: req.session.profile,
+            });
+        }
+        // check if any value is not null
+        else if (size != 0
+            && f
+            && k.tenderName
+            && k.email) {
+            // check if record already exists...
+            db.collection("tender_files").findOne(
+                {
+                    email: k.email,
+                    tenderName: k.tenderName
+                },
+                { projection: { _id: 1, email: 1, tenderName: 1 ,edm:1,profile:1} },
+                (error, result) => {
+                    if (result && result._id) {
+                        db.collection("tender_files").findOneAndUpdate(
+                            {
+                                email: k.email,
+                                tenderName: k.tenderName
+                            },
+                            { $set: {
+                                profile: {
+                                    tenderName: k.tenderName,
+                                    email: k.email,
+                                    endDate: result.profile.endDate,
+                                    amountWords: result.profile.amountWords,
+                                    edm: f,
+                                    pan: result.profile.pan,
+                                    aadhar: result.profile.aadhar,
+                                }
+                            }}, { new: true }
+                        )
+                        // console.log(f);
+                        res.status(200).send({
+                            sucess: true,
+                            msg: "Value has been Updated!",
+                            data: result,
+                        })
+                    }
+                    else{
+                        res.status(200).send({
+                            sucess:"success",
+                            message:"User Not Found"
+                        })
+                    }
+                }
+            );
+        } else {
+            // some fields are null
+            res.json({
+                status: "error",
+                message: "Empty or invalid data",
+                isLogged: false,
+            });
+        }
+    })
+    // =======================================================================*******************************================================
+    // =======================================================================*******************************================================
+    const upload_PAN = multer({
+        storage: multerS3({
+            s3: s3,
+            bucket: BUCKET_TENDER,
+            destination: function (req, file, cb) {
+                cb(null, "tender_uploads")
+            },
+            key: function (req, file, cb) {
+                console.log(file);
+                cb(null, file.fieldname + "_" + Date.now() + ".pdf")
+            }
+        })
+    }).single('PAN_file')
+    app.post('/upload_pan', upload_PAN, async function (req, res, next) {
+        let f = req.file;
+        let k = req.body;
+        console.log(k);
+        console.log("Files");
+        // let edm = f;
+        let size = 1;
+        console.log(f);
+        console.log('Successfully uploaded ' + f.fieldname + ' location!')
+        if (req.session && req.session.userid) {
+            res.json({
+                status: "warn",
+                message: "Session already exists !",
+                isLogged: true,
+                lastUpdated: req.session.lastUpdated,
+                isLatest: false,
+                profile: req.session.profile,
+            });
+        }
+        // check if any value is not null
+        else if (size != 0
+            && f
+            && k.tenderName
+            && k.email) {
+            // check if record already exists...
+            db.collection("tender_files").findOne(
+                {
+                    email: k.email,
+                    tenderName: k.tenderName
+                },
+                { projection: { _id: 1, email: 1, tenderName: 1, edm: 1, profile: 1 } },
+                (error, result) => {
+                    if (result && result._id) {
+                        db.collection("tender_files").findOneAndUpdate(
+                            {
+                                email: k.email,
+                                tenderName: k.tenderName
+                            },
+                            {
+                                $set: {
+                                    profile: {
+                                        tenderName: k.tenderName,
+                                        email: k.email,
+                                        endDate: result.profile.endDate,
+                                        amountWords: result.profile.amountWords,
+                                        edm: result.profile.edm,
+                                        pan: f,
+                                        aadhar: result.profile.aadhar,
+                                    }
+                                }
+                            }, { new: true }
+                        )
+                        // console.log(f);
+                        res.status(200).send({
+                            sucess: true,
+                            msg: "Value has been Updated!",
+                            data: result,
+                        })
+                    }
+                    else {
+                        res.status(200).send({
+                            sucess: "success",
+                            message: "User Not Found"
+                        })
+                    }
+                }
+            );
+        } else {
+            // some fields are null
+            res.json({
+                status: "error",
+                message: "Empty or invalid data",
+                isLogged: false,
+            });
+        }
+    })
+    // =======================================================================*******************************================================
+    // =======================================================================*******************************================================
+    const upload_aadhar = multer({
+        storage: multerS3({
+            s3: s3,
+            bucket: BUCKET_TENDER,
+            destination: function (req, file, cb) {
+                cb(null, "tender_uploads")
+            },
+            key: function (req, file, cb) {
+                console.log(file);
+                cb(null, file.fieldname + "_" + Date.now() + ".pdf")
+            }
+        })
+    }).single('aadhar_file')
+    app.post('/upload_aadhar', upload_aadhar, async function (req, res, next) {
+        let f = req.file;
+        let k = req.body;
+        console.log(k);
+        console.log("Files");
+        // let edm = f;
+        let size = 1;
+        console.log(f);
+        console.log('Successfully uploaded ' + f.fieldname + ' location!')
+        if (req.session && req.session.userid) {
+            res.json({
+                status: "warn",
+                message: "Session already exists !",
+                isLogged: true,
+                lastUpdated: req.session.lastUpdated,
+                isLatest: false,
+                profile: req.session.profile,
+            });
+        }
+        // check if any value is not null
+        else if (size != 0
+            && f
+            && k.tenderName
+            && k.email) {
+            // check if record already exists...
+            db.collection("tender_files").findOne(
+                {
+                    email: k.email,
+                    tenderName: k.tenderName
+                },
+                { projection: { _id: 1, email: 1, tenderName: 1, edm: 1, profile: 1 } },
+                (error, result) => {
+                    if (result && result._id) {
+                        db.collection("tender_files").findOneAndUpdate(
+                            {
+                                email: k.email,
+                                tenderName: k.tenderName
+                            },
+                            {
+                                $set: {
+                                    profile: {
+                                        tenderName: k.tenderName,
+                                        email: k.email,
+                                        endDate: result.profile.endDate,
+                                        amountWords: result.profile.amountWords,
+                                        edm: result.profile.edm,
+                                        pan: result.profile.pan,
+                                        aadhar: f,
+                                    }
+                                }
+                            }, { new: true }
+                        )
+                        // console.log(f);
+                        res.status(200).send({
+                            sucess: true,
+                            msg: "Value has been Updated!",
+                            data: result,
+                        })
+                    }
+                    else {
+                        res.status(200).send({
+                            sucess: "success",
+                            message: "User Not Found"
+                        })
+                    }
+                }
+            );
+        } else {
+            // some fields are null
+            res.json({
+                status: "error",
+                message: "Empty or invalid data",
+                isLogged: false,
+            });
         }
     })
     // =======================================================================*******************************================================
