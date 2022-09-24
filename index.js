@@ -29,8 +29,8 @@ app.use(
 );
 // enabling CROS
 
-let origins = ["https://murudeshwartempletender.com"]
-if (process.env.NODE_ENV === "development") origins.push("https://murudeshwartempletender.com")
+let origins = ["*"]
+if (process.env.NODE_ENV === "development") origins.push("*")
 app.use(function (req, res, next) {
     if (origins.includes(req.headers.origin)) {
         res.header("Access-Control-Allow-Origin", req.headers.origin) // restrict it to the required domain
