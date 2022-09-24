@@ -8,26 +8,7 @@ const url = process.env.MONGODB_URL
 let flag = false
 let dbo
 
-// const client = new MongoClient(url, {
-//     useNewUrlParser: true,
-//     useUnifiedTopology: true,
-// });
 
-// mongoose.connect(url,{
-//     useNewUrlParser:true,
-//     useCreateIndex:true,
-//     useUnifiedTopology:true,
-//     useFindAndModify:false
-// }).then(()=>{
-//     console.log(`connection successful`);
-// }).catch((err)=>console.log(`No Connection`));
-
-// mongoose.connect(url,{
-//     useNewUrlParser:true,
-//     useCreateIndex:true,
-//     useUnifiedTopology:true,
-//     useFindAndModify:false
-// }).then(()=>{
 module.exports = {
     connect: callback => {
         MongoClient.connect(process.env.MONGODB_URL || url, async (err, db) => {
