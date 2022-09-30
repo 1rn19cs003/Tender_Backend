@@ -6,6 +6,8 @@ const sessions = require("express-session");
 const mongo = require("./src/config/database.config.js");
 const multer = require("multer");
 const path = require('path')
+// const MongoStore= require("connect-mongo");
+const MongoStore = require('connect-mongo');
 
 // Abhishek Jaiswal:- Let's check it out!!!!!!!
 // mailto:-abhigrmr@gmail.com
@@ -17,16 +19,34 @@ const app = express();
 const oneDay = 1000 * 60 * 60 * 24;
 
 //session middleware
+// app.use(
+//   sessions({
+//     secret: "let's check it out !!!",
+//     saveUninitialized: true,
+//     cookie: {
+//       maxAge: oneDay,
+//     },
+//     resave: false,
+//   })
+// );
 app.use(
   sessions({
-    secret: "let's check it out !!!",
-    saveUninitialized: true,
-    cookie: {
-      maxAge: oneDay,
-    },
-    resave: false,
+    secret: process.env.COOKIE_SECRET,
+    sameSite: true,
+    path: "/",
+    store: MongoStore.create({
+      mongoUrl: process.env.MONGODB_URL || "mongodb://localhost:27017/",
+      dbName: "Vendors",
+      ttl: 14 * 24 * 60 * 60, // 14 Days
+      touchAfter: 600, // writes to db every 10 minutes
+      crypto: {
+        secret: process.env.SESSION_KEY,
+      },
+    }),
+    saveUninitialized: false, // don't create session until something stored
+    resave: false, //don't save session if unmodified
   })
-);
+)
 // enabling CROS
 
 let origins = ["https://murudeshwartempletender.com"]
