@@ -26,7 +26,7 @@ module.exports = function (app, db) {
     // cb means call back
 
     aws.config.update({
-        secretAccessKey: process.env.ACCESS_SECRET,
+        secretAccessKey: process.env.ACCESS_SECRET ,
         accessKeyId: process.env.ACCESS_KEY,
         region: process.env.REGION,
     });
