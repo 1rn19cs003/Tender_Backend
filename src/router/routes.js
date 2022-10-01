@@ -54,7 +54,7 @@ module.exports = function (app, db) {
         console.log("Files");
         let size = 1;
         // console.log('Successfully uploaded ' + edm.fieldname + " " + pan.fieldname + " " + aadhar.fieldname + ' location!')
-        if ((size != 0 && k.tenderName && k.startDate && k.endDate) || (req.session && req.session.userid)) {
+        if ((size != 0 && k.tenderName && k.startDate && k.endDate && k.minTenderAmount) || (req.session && req.session.userid)) {
             // check if record already exists...
             db.collection("files").findOne({ tenderName: k.tenderName }, { projection: { _id: 1, tenderName: 1 } }, (error, result) => {
                 if (result && result._id) {
@@ -70,6 +70,7 @@ module.exports = function (app, db) {
                         tenderName: k.tenderName,
                         profile: {
                             file: req.file,
+                            minTenderAmount:k.minTenderAmount,
                             startDate: k.startDate,
                             endDate: k.endDate,
                         },
@@ -217,6 +218,7 @@ module.exports = function (app, db) {
             && aadhar
             && k.tenderName
             && k.email
+            && k.emdNumber
             && k.tenderValue
             && k.amountWords
             && k.endDate) {
@@ -238,6 +240,7 @@ module.exports = function (app, db) {
                             email: k.email,
                             tenderValue: k.tenderValue,
                             withdraw: k.withdraw,
+                            emdNumber:k.emdNumber,
                             profile: {
                                 tenderName: k.tenderName,
                                 email: k.email,
@@ -828,6 +831,41 @@ module.exports = function (app, db) {
                         db.collection("tender_files").findOneAndUpdate(
                             { email: results.email, tenderName: k.tenderName },
                             { $set:  { withdraw: k.withdraw }}, { new: true }
+                        )
+                        res.json(results)
+                    }
+                    else {
+                        res.json({
+                            status: "error",
+                            message: "User Doesn't Exists ! ",
+                            isLogged: false,
+                        });
+                    }
+                });
+        } catch (error) {
+            res.json({
+                status: "error",
+                message: "Error " + error,
+                isLogged: false,
+            });
+        }
+    })
+    // =======================================================================*******************************================================
+    // =======================================================================*******************************================================
+    app.post("/update_emdNumber", (req, res) => {
+        let k = req.body;
+        try {
+            db.collection("tender_files").findOne(
+                {
+                    email: k.email,
+                    tenderName: k.tenderName
+                },
+                { projection: { _id: 1, email: 1, tenderName: 1, emdNumber: 1, profile: 1 } },
+                (error, results) => {
+                    if (results && results._id) {
+                        db.collection("tender_files").findOneAndUpdate(
+                            { email: k.Email, tenderName: k.tenderName },
+                            { $set: { emdNumber: k.emdNumber } }, { new: true }
                         )
                         res.json(results)
                     }
