@@ -2,11 +2,11 @@
 const multer = require('multer');
 const fs = require("fs");
 require("dotenv").config();
-const aws = require('aws-sdk')
-const multerS3 = require('multer-s3')
+// const aws = require('aws-sdk')
+// const multerS3 = require('multer-s3')
 const pdf = require("html-pdf");
-const nodemailer = require('nodemailer');
-const randomstring = require('randomstring');
+// const nodemailer = require('nodemailer');
+// const randomstring = require('randomstring');
 
 module.exports = function (app, db) {
     // dummy route
@@ -16,7 +16,7 @@ module.exports = function (app, db) {
             db.collection("admin")
                 .find({})
                 .toArray((err, res) => console.log(res, err));
-            res.send("Admin part");
+            res.send("Admin update part");
         } catch (error) {
             console.log(error);
             res.send(error);
@@ -72,17 +72,17 @@ module.exports = function (app, db) {
             // check if record already exists...
             db.collection("files").findOne({ tenderName: k.tenderName }, { projection: { _id: 1, tenderName: 1, profile: 1, } }, (error, result) => {
                 if (result && result._id) {
-                        const filename = result.profile.file.filename;
-                        // console.log(filename)
-                        // console.log(result.profile)
-                        if(filename.length!=0){
+                    const filename = result.profile.file.filename;
+                    // console.log(filename)
+                    // console.log(result.profile)
+                    if (filename.length != 0) {
                         fs.unlink("./uploads/" + filename, (err) => {
                             if (err) {
                                 throw err;
                             }
                             console.log("Delete File successfully.");
                         });
-                        }
+                    }
                     db.collection("files").findOneAndUpdate(
                         { tenderName: k.tenderName },
                         {
@@ -223,9 +223,9 @@ module.exports = function (app, db) {
                 console.log("Delete File successfully.");
                 res.json({
                     status: "Sucess",
-                
+
                 });
-            }); 
+            });
         }
         catch (error) {
             res.json({
@@ -555,7 +555,7 @@ module.exports = function (app, db) {
     // })
     // =======================================================================*******************************================================
     // =======================================================================*******************************================================
-    
+
     app.post("/update_vender", (req, res) => {
         let k = req.body;
         try {
@@ -713,6 +713,17 @@ module.exports = function (app, db) {
                 { projection: { _id: 1, email: 1, tenderName: 1, edm: 1, profile: 1 } },
                 (error, result) => {
                     if (result && result._id) {
+                        let filename = result.profile.edm.filename;
+                        // console.log(filename);
+                        // console.log(filename.length);
+                        if (filename.length != 0) {
+                                fs.unlink("./uploads_tender/" + filename, (err) => {
+                                    if (err) {
+                                        throw err;
+                                    }
+                                    console.log("Delete File successfully.");
+                                });
+                        }
                         db.collection("tender_files").findOneAndUpdate(
                             {
                                 email: k.email,
@@ -815,6 +826,18 @@ module.exports = function (app, db) {
                 { projection: { _id: 1, email: 1, tenderName: 1, edm: 1, profile: 1 } },
                 (error, result) => {
                     if (result && result._id) {
+                        let filename = result.profile.pan.filename;
+                        // console.log(filename);
+                        // console.log(filename.length);
+                        if (filename.length != 0) {
+                            fs.unlink("./uploads_tender/" + filename, (err) => {
+                                if (err) {
+                                    throw err;
+                                }
+                                console.log("Delete File successfully.");
+                               
+                            });
+                        }
                         db.collection("tender_files").findOneAndUpdate(
                             {
                                 email: k.email,
@@ -883,7 +906,7 @@ module.exports = function (app, db) {
                 cb(null, file.fieldname + "_" + Date.now() + ".pdf")
             }
         })
-    }).single('aadhar_file')
+    }).single('Aadhar_file')
     app.post('/upload_aadhar', upload_aadhar, async function (req, res, next) {
         let f = req.file;
         let k = req.body;
@@ -917,6 +940,17 @@ module.exports = function (app, db) {
                 { projection: { _id: 1, email: 1, tenderName: 1, edm: 1, profile: 1 } },
                 (error, result) => {
                     if (result && result._id) {
+                        let filename = result.profile.aadhar.filename;
+                        // console.log(filename);
+                        // console.log(filename.length);
+                        if (filename.length != 0) {
+                            fs.unlink("./uploads_tender/" + filename, (err) => {
+                                if (err) {
+                                    throw err;
+                                }
+                                console.log("Delete File successfully.");
+                            });
+                        }
                         db.collection("tender_files").findOneAndUpdate(
                             {
                                 email: k.email,
