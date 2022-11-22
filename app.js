@@ -82,6 +82,7 @@ mongo.connect((err, db) => {
     require("./src/router/signin")(app, db)
     require("./src/router/routes")(app, db)
 })
+
 app.get("/uploads/:filename", (req, res) => {
     console.log(res.params)
     res.sendFile(path.join(__dirname + "/uploads/" + req.params.filename))

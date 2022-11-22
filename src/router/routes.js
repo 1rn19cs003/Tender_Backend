@@ -147,72 +147,6 @@ module.exports = function (app, db) {
     })
 
 
-    // app.get("/list_admin", async (req, res) => {
-    //     try {
-    //         let result = await s3.listObjectsV2({ Bucket: BUCKET_UPLOADS }).promise()
-    //         let value = await result.Contents.map(item => item.Key);
-    //         console.log("result " + result)
-    //         console.log("value " + value)
-    //         res.send(value)
-    //     } catch (error) {
-    //         res.json({
-    //             status: "error",
-    //             message: error,
-    //         });
-    //     }
-    // })
-
-    //     app.get("/list_admin", async (req, res) => {
-    //         function readFiles('./uploads_tender', processFile) {
-    //         // read directory
-    //         fs.readdir(dir, (error, fileNames) => {
-    //             if (error) throw error;
-
-    //             fileNames.forEach(filename => {
-    //                 // get current file name
-    //                 const name = path.parse(filename).name;
-    //                 // get current file extension
-    //                 const ext = path.parse(filename).ext;
-    //                 // get current file path
-    //                 const filepath = path.resolve('./uploads_tender', filename);
-
-    //                 // get information about the file
-    //                 fs.stat(filepath, function (error, stat) {
-    //                     if (error) throw error;
-
-    //                     // check if the current path is a file or a folder
-    //                     const isFile = stat.isFile();
-
-    //                     // exclude folders
-    //                     if (isFile) {
-    //                         // callback, do something with the file
-    //                         processFile(filepath, name, ext, stat);
-    //                     }
-    //                 });
-    //             });
-    //         });
-    //     }
-    // })
-
-    // app.get("/download_admin/:filename", async (req, res) => {
-    //     try {
-    //         const filename = req.params.filename;
-    //         let x = await s3.getObject({ Bucket: BUCKET_UPLOADS, Key: filename }).promise();
-    //         res.send(x);
-    //         console.log(x);
-    //         // res.sendFile(path.join(x + req.params.filename))
-    //         res.send("File downLoaded");
-    //     }
-    //     catch (error) {
-    //         res.json({
-    //             status: "error",
-    //             message: error,
-    //         });
-    //     }
-    // })
-
-
-
     app.delete("/delete_admin/:filename", (req, res) => {
         try {
             const filename = req.params.filename;
@@ -417,7 +351,6 @@ module.exports = function (app, db) {
                 console.log("Delete File successfully.");
                 res.json({
                     status: "Sucess",
-
                 });
             });
         }
@@ -996,6 +929,7 @@ module.exports = function (app, db) {
     })
     // =======================================================================*******************************================================
     // =======================================================================*******************************================================
+    
     app.post("/update_withdraw", (req, res) => {
         let k = req.body;
         try {
@@ -1067,6 +1001,7 @@ module.exports = function (app, db) {
     // =======================================================================*******************************================================
     // =======================================================================*******************************================================
     // get all vendors
+    
     app.get("/all_vendors", (req, res) => {
         try {
             let k = req.body;
@@ -1292,31 +1227,31 @@ module.exports = function (app, db) {
             });
     });
 
-    app.delete("/delete_file", (req, res) => {
-        console.log(req.body);
-        let k = req.body;
-        db.collection("files").findOne(
-            { tenderName: k.tenderName },
-            { projection: { _id: 1, tenderName: 1 } },
-            (error, result) => {
-                if (result && result._id) {
-                    // res.json({
-                    //     result
-                    // });
-                    const resu = db.collection("files").deleteOne({ tenderName: k.tenderName });
-                    res.send(resu);
-                }
-                else {
-                    // console.log(results);
-                    // res.json(results);
-                    res.json({
-                        status: "error",
-                        message: "Empty or Invalid Name",
-                        isLogged: false,
-                    });
-                }
-            });
-    });
+    // app.delete("/delete_file", (req, res) => {
+    //     console.log(req.body);
+    //     let k = req.body;
+    //     db.collection("files").findOne(
+    //         { tenderName: k.tenderName },
+    //         { projection: { _id: 1, tenderName: 1 } },
+    //         (error, result) => {
+    //             if (result && result._id) {
+    //                 // res.json({
+    //                 //     result
+    //                 // });
+    //                 const resu = db.collection("files").deleteOne({ tenderName: k.tenderName });
+    //                 res.send(resu);
+    //             }
+    //             else {
+    //                 // console.log(results);
+    //                 // res.json(results);
+    //                 res.json({
+    //                     status: "error",
+    //                     message: "Empty or Invalid Name",
+    //                     isLogged: false,
+    //                 });
+    //             }
+    //         });
+    // });
     // =======================================================================*******************************================================
     // =======================================================================*******************************================================
     app.delete("/delete_tender", (req, res) => {
@@ -1424,30 +1359,31 @@ module.exports = function (app, db) {
     });
     // =======================================================================*******************************================================
     // =======================================================================*******************************================================
-    app.get("/all_data", (req, res) => {
-        console.log("insides");
-        db.collection("files")
-            .aggregate([
-                {
-                    $lookup: {
-                        from: "members",
-                        localField: "email",
-                        foreignField: "email",
-                        as: "stud",
-                    },
-                },
-            ])
-            .toArray((error, results) => {
-                if (error) {
-                    res.json({ error });
-                }
-                res.json(results);
-            });
-    });
+    // app.get("/all_data", (req, res) => {
+    //     console.log("insides");
+    //     db.collection("files")
+    //         .aggregate([
+    //             {
+    //                 $lookup: {
+    //                     from: "members",
+    //                     localField: "email",
+    //                     foreignField: "email",
+    //                     as: "stud",
+    //                 },
+    //             },
+    //         ])
+    //         .toArray((error, results) => {
+    //             if (error) {
+    //                 res.json({ error });
+    //             }
+    //             res.json(results);
+    //         });
+    // });
     // =======================================================================*******************************================================
     // =======================================================================*******************************================================
     // post route for register (expects json data)
     // to register all members
+    
     app.post("/register", (req, res) => {
         let k = req.body;
         console.log(req.body);
