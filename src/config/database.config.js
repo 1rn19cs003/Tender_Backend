@@ -1,8 +1,7 @@
 require("dotenv").config()
 const { MongoClient } = require("mongodb")
 const mongoose = require("mongoose")
-const url = process.env.MONGODB_URL
-// const url = process.env.MONGODB_URL || "mongodb://localhost:27017/placement"
+const url = process.env.MONGODB_URL 
 // const url = 'mongodb://localhost:27017/<name_the_cluster>'
 
 let flag = false
@@ -11,7 +10,7 @@ let dbo
 
 module.exports = {
     connect: callback => {
-        MongoClient.connect(process.env.MONGODB_URL || url, async (err, db) => {
+        MongoClient.connect( url, async (err, db) => {
             if (err) throw err
             console.log("DB connected !")
             dbo = await db.db("Vendors")

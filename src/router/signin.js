@@ -194,7 +194,7 @@ module.exports = function (app, db) {
                     res.json({
                         status: "success",
                         message: "Session exists !",
-                        isLogged: true,
+                        isLogged: false,
                         lastUpdated: req.session.lastUpdated,
                         isLatest: false,
                         // isAdmin: ((req.session.admin === true) || (req.session.admin === false)) ? true : false,
